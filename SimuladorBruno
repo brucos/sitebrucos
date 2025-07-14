@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Parcelamento</title>
+    <style>
+        body {
+            background: #e0f7fa;
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            color: #333;
+        }
+        h1 {
+            color: #4db6ac;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, button {
+            margin-top: 5px;
+            padding: 8px;
+            width: 100%;
+            max-width: 400px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            background-color: #dcedc8;
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 400px;
+        }
+        .whatsapp {
+            margin-top: 20px;
+            background-color: #25D366;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            display: inline-block;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulador de Parcelamento</h1>
+
+    <label>Valor desejado (R$):
+        <input type="number" id="valorDesejado">
+    </label>
+
+    <label>Quantidade de parcelas:
+        <select id="parcelas">
+            <option value="">Selecione</option>
+            <!-- JS vai preencher -->
+        </select>
+    </label>
+
+    <label>Bandeira do Cartão:
+        <select id="bandeira">
+            <option value="visa">Visa</option>
+            <option value="master">Mastercard</option>
+            <option value="hiper">Hiper</option>
+            <option value="elo">Elo</option>
+        </select>
+    </label>
+
+    <button onclick="calcularParcelas()">Calcular Parcelas</button>
+
+    <div class="result" id="resultadoParcelas"></div>
+
+    <hr>
+    <h2>Simular com valor do cartão de crédito</h2>
+
+    <label>Valor disponível no cartão (R$):
+        <input type="number" id="valorCartao">
+    </label>
+
+    <label>Bandeira do Cartão:
+        <select id="bandeiraCartao">
+            <option value="visa">Visa</option>
+            <option value="master">Mastercard</option>
+            <option value="hiper">Hiper</option>
+            <option value="elo">Elo</option>
+        </select>
+    </label>
+
+    <button onclick="calcularValorLiquido()">Calcular Valor com Juros</button>
+
+    <div class="result" id="resultadoCartao"></div>
+
+    <a id="whatsappLink" class="whatsapp" target="_blank">Enviar simulação pelo WhatsApp</a>
+
+    <script>
+        const taxasParcelas = {};
+        for (let i = 1; i <= 18; i++) {
+            taxasParcelas[i] = i; // taxa 1% a 18% para 1 a 18x
+        }
+
+        const taxasBandeiras = {
+            visa: 5,
+            master: 6,
+            hiper: 7,
+            elo: 8
+        };
+
+        const parcelasSelect = document.getElementById("parcelas");
+        for (let i = 1; i <= 18; i++) {
+            let opt = document.createElement("option");
+            opt.value = i;
+            opt.text = `${i}x (${taxasParcelas[i]}% juros)`;
+            parcelasSelect.appendChild(opt);
+        }
+
+        function calcularParcelas() {
+            let valor = parseFloat(document.getElementById("valorDesejado").value);
+            let parcelas = parseInt(document.getElementById("parcelas").value);
+            let taxa = taxasParcelas[parcelas] / 100;
+
+            if (!valor || !parcelas) return;
+
+            let total = valor * (1 + taxa);
+            let parcela = total / parcelas;
+
+            document.getElementById("resultadoParcelas").innerHTML = 
+                `Total com juros: R$ ${total.toFixed(2)}<br>Valor da parcela: R$ ${parcela.toFixed(2)}`;
+
+            gerarLinkWhatsapp(`Valor: R$ ${valor} em ${parcelas}x de R$ ${parcela.toFixed(2)} (Total R$ ${total.toFixed(2)})`);
+        }
+
+        function calcularValorLiquido() {
+            let valor = parseFloat(document.getElementById("valorCartao").value);
+            let bandeira = document.getElementById("bandeiraCartao").value;
+            let taxa = taxasBandeiras[bandeira] / 100;
+
+            if (!valor) return;
+
+            let valorLiquido = valor / (1 + taxa);
+            document.getElementById("resultadoCartao").innerHTML = 
+                `Você pode sacar R$ ${valorLiquido.toFixed(2)} com ${taxa * 100}% de taxa.`;
+
+            gerarLinkWhatsapp(`Cartão ${bandeira.toUpperCase()}: Valor disponível R$ ${valor}, valor com taxa: R$ ${valorLiquido.toFixed(2)}`);
+        }
+
+        function gerarLinkWhatsapp(mensagem) {
+            let link = `https://wa.me/5582994120462?text=${encodeURIComponent("Simulação:")}%0A${encodeURIComponent(mensagem)}`;
+            document.getElementById("whatsappLink").href = link;
+        }
+    </script>
+</body>
+</html>
